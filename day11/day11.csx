@@ -21,25 +21,35 @@ FindAdjacents();
 
 static int totalFlashes = 0;
 
-for (int i = 0; i < 100; i++)
+var flashesAfter100Steps = 0;
+
+var firstStepWhereAllFlashes = 0;
+
+for (int i = 0; i < 500; i++)
 {
     Reset();
-    Step();
-    if (i == 194)
+    var f = Step();
+
+    if (i == 100)
     {
-        PrintMap();
+        flashesAfter100Steps = totalFlashes;
     }
+
+    if (f == 100)
+    {
+        firstStepWhereAllFlashes = i + 1;
+    }
+    totalFlashes += f;
 }
 
+flashesAfter100Steps.ShouldBe(1773);
+WriteLine($"Total number of flashes after 100 steps: {flashesAfter100Steps}");
+
+firstStepWhereAllFlashes.ShouldBe(494);
+WriteLine($"First step where all flashes: {firstStepWhereAllFlashes}");
 
 
-
-totalFlashes.ShouldBe(1773);
-WriteLine($"Total number of flashes: {totalFlashes}");
-
-WriteLine("Done");
-
-private void Step()
+private int Step()
 {
     for (int r = 0; r < GridSize; r++)
     {
@@ -49,14 +59,15 @@ private void Step()
         }
     }
 
+    int stepFlashes = 0;
     int flashes = 0;
     flashes = Flash();
     while (flashes > 0)
     {
-        totalFlashes += flashes;
+        stepFlashes += flashes;
         flashes = Flash();
     }
-
+    return stepFlashes;
 }
 
 private int Flash()
