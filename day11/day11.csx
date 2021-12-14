@@ -10,12 +10,10 @@ for (int r = 0; r < GridSize; r++)
 {
     for (int c = 0; c < GridSize; c++)
     {
-        var octopus = new Octopus(int.Parse(input[r][c].ToString()), r, c);
+        var octopus = new Octopus(int.Parse(input[r][c].ToString()));
         map[r, c] = octopus;
     }
 }
-
-PrintMap();
 
 FindAdjacents();
 
@@ -27,7 +25,6 @@ var firstStepWhereAllFlashes = 0;
 
 for (int i = 0; i < 500; i++)
 {
-    Reset();
     var f = Step();
 
     if (i == 100)
@@ -80,50 +77,18 @@ private int Flash()
             if (map[r, c].EnergyLevel > 9)
             {
                 map[r, c].EnergyLevel = 0;
-                map[r, c].HasFlashed = true;
                 flashes++;
                 foreach (var adjacent in map[r, c].Adjacents)
                 {
-                    if (!adjacent.HasFlashed)
+                    if (!(adjacent.EnergyLevel == 0))
                     {
                         adjacent.EnergyLevel++;
                     }
-
                 }
             }
         }
     }
-    if (flashes == 100)
-    {
-
-    }
     return flashes;
-}
-
-private void PrintMap()
-{
-    var sb = new StringBuilder();
-    for (int r = 0; r < GridSize; r++)
-    {
-        for (int c = 0; c < GridSize; c++)
-        {
-            sb.Append(map[r, c].EnergyLevel);
-        }
-        sb.AppendLine();
-    }
-
-    WriteLine(sb.ToString());
-}
-
-private void Reset()
-{
-    for (int r = 0; r < GridSize; r++)
-    {
-        for (int c = 0; c < GridSize; c++)
-        {
-            map[r, c].Reset();
-        }
-    }
 }
 
 private void FindAdjacents()
@@ -224,21 +189,13 @@ private void FindAdjacents()
 
 public record Octopus()
 {
-    public Octopus(int energyLevel, int row, int column) : this()
+    public Octopus(int energyLevel) : this()
     {
         Adjacents = new List<Octopus>();
         EnergyLevel = energyLevel;
-        Row = row;
-        Column = column;
     }
-
-    public int Row { get; set; }
-
-    public int Column { get; set; }
 
     public int EnergyLevel { get; set; }
     public List<Octopus> Adjacents { get; set; }
-    public bool HasFlashed { get; set; }
-    public void Reset() => HasFlashed = false;
 }
 
