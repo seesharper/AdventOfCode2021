@@ -20,54 +20,60 @@ foreach (var line in input)
     {
         caves[route[1]].Edges.Add(caves[route[0]]);
     }
-
-
     caves[route[0]].Edges.Add(caves[route[1]]);
-
-
-
 }
+
 
 var startCave = caves.Single(kvp => kvp.Key == "start").Value;
 
-VisitCave(startCave, "start");
+VisitCave(startCave, "start", new Dictionary<string, int>(caves.Select(kvp => kvp.Key).Select(k => KeyValuePair.Create(k, 0))));
 
-private void VisitCave(Cave cave, string currentPath = "")
+private void VisitCave(Cave cave, string currentPath, Dictionary<string, int> visitorMap)
 {
-    currentPath += $" => {cave.Name}";
-    WriteLine(currentPath);
-    
+    currentPath += " => " + cave.Name;
+    if (cave.Name == "end")
+    {
+        WriteLine(currentPath);
+        return;
+    }
 
-    cave.VisitCount++;
+    //WriteLine(cave.Name);
+
+    visitorMap = IncreaseVisitCount(cave.Name);
+
     foreach (var edge in cave.Edges)
     {
-        if (cave.CaveType == CaveType.SmallCave && edge.CaveType == CaveType.SmallCave)
+        if (CanVisitEdge(edge))
         {
-            return;
-        }
-        else if (edge.CaveType == CaveType.SmallCave && edge.VisitCount > 0)
-        {
-            return;
-        }
-
-        else if (edge.Name == "end")
-        {
-            currentPath += " => end";
-            foreach (var kvp in caves)
-            {
-                kvp.Value.VisitCount = 0;
-            }
-
-            return;
-        }
-
-        else
-        {
-
-            VisitCave(edge, currentPath);
+            VisitCave(edge, currentPath, visitorMap);
         }
     }
+
+    bool CanVisitEdge(Cave edge)
+    {
+        if (cave.CaveType == CaveType.SmallCave && edge.CaveType == CaveType.SmallCave && edge.Edges.Count == 1 && edge.Edges[0] == cave)
+        {
+            return false;
+        }
+
+        else if (edge.CaveType == CaveType.SmallCave && visitorMap[edge.Name] > 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    Dictionary<string, int> IncreaseVisitCount(string key)
+    {
+        var newDictionary = new Dictionary<string, int>(visitorMap.Select(kvp => KeyValuePair.Create(kvp.Key, kvp.Value)));
+        newDictionary[key]++;
+        return newDictionary;
+    }
 }
+
+
+
 
 
 WriteLine("Done");
