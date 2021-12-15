@@ -1,6 +1,6 @@
 #load "../tools.csx"
 
-var input = File.ReadAllLines("day12/sample.txt");
+var input = File.ReadAllLines("day12/input.txt");
 
 var caves = new Dictionary<string, Cave>();
 
@@ -26,18 +26,22 @@ foreach (var line in input)
 
 var startCave = caves.Single(kvp => kvp.Key == "start").Value;
 
+
+List<string> paths = new List<string>();
+
 VisitCave(startCave, "start", new Dictionary<string, int>(caves.Select(kvp => kvp.Key).Select(k => KeyValuePair.Create(k, 0))));
+
+
 
 private void VisitCave(Cave cave, string currentPath, Dictionary<string, int> visitorMap)
 {
     currentPath += " => " + cave.Name;
     if (cave.Name == "end")
     {
+        paths.Add(currentPath);
         WriteLine(currentPath);
         return;
     }
-
-    //WriteLine(cave.Name);
 
     visitorMap = IncreaseVisitCount(cave.Name);
 
@@ -51,6 +55,12 @@ private void VisitCave(Cave cave, string currentPath, Dictionary<string, int> vi
 
     bool CanVisitEdge(Cave edge)
     {
+        if (edge.Name == "start")
+        {
+            return false;
+        }
+
+
         if (cave.CaveType == CaveType.SmallCave && edge.CaveType == CaveType.SmallCave && edge.Edges.Count == 1 && edge.Edges[0] == cave)
         {
             return false;
@@ -74,9 +84,10 @@ private void VisitCave(Cave cave, string currentPath, Dictionary<string, int> vi
 
 
 
+var t = paths.Distinct().ToArray().Count();
 
-
-WriteLine("Done");
+t.ShouldBe(5958);
+WriteLine($"Number of paths: {t}");
 
 private CaveType GetCaveType(string name)
 {
@@ -95,11 +106,7 @@ private CaveType GetCaveType(string name)
     return CaveType.BigCave;
 }
 
-public record Cave(string Name, CaveType CaveType, List<Cave> Edges)
-{
-    public int VisitCount { get; set; }
-
-}
+public record Cave(string Name, CaveType CaveType, List<Cave> Edges);
 
 public enum CaveType
 {
@@ -108,8 +115,3 @@ public enum CaveType
     BigCave,
     SmallCave
 }
-
-
-
-
-
