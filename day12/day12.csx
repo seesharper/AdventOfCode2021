@@ -22,16 +22,22 @@ foreach (var line in input)
 
 var startCave = caves.Single(kvp => kvp.Key == "start").Value;
 
+var paths = new List<string>();
+VisitCave(startCave, "", new Dictionary<string, int>(caves.Select(kvp => kvp.Key).Select(k => KeyValuePair.Create(k, 0))), string.Empty);
+var pathCount = paths.Count();
+pathCount.ShouldBe(5958);
+WriteLine($"Path count allowing small caves visited once: {pathCount}");
 
-
-List<string> paths = new List<string>();
-
+paths.Clear();
 var smallCaves = caves.Values.Where(v => v.CaveType == CaveType.SmallCave).ToArray();
 foreach (var smallCave in smallCaves)
 {
     VisitCave(startCave, "", new Dictionary<string, int>(caves.Select(kvp => kvp.Key).Select(k => KeyValuePair.Create(k, 0))), smallCave.Name);
 }
 
+pathCount = paths.Distinct().Count();
+pathCount.ShouldBe(150426);
+WriteLine($"Path count allowing a single small cave visited twice: {pathCount}");
 
 private void VisitCave(Cave cave, string currentPath, Dictionary<string, int> visitorMap, string smallCaveAllowedTwice)
 {
@@ -39,7 +45,6 @@ private void VisitCave(Cave cave, string currentPath, Dictionary<string, int> vi
     if (cave.Name == "end")
     {
         paths.Add(currentPath);
-        //WriteLine(currentPath.Substring(1));
         return;
     }
 
@@ -77,10 +82,6 @@ private void VisitCave(Cave cave, string currentPath, Dictionary<string, int> vi
             {
                 return true;
             }
-            // if (!hasVisitedSmallCaveTwice)
-            // {
-            //     return true;
-            // }
             return false;
         }
 
@@ -94,14 +95,6 @@ private void VisitCave(Cave cave, string currentPath, Dictionary<string, int> vi
         return newDictionary;
     }
 }
-
-
-
-var t = paths.Distinct().ToArray().Count();
-
-//t.ShouldBe(5958);
-t.ShouldBe(10);
-WriteLine($"Number of paths: {t}");
 
 private CaveType GetCaveType(string name)
 {
