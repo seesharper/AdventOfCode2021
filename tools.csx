@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 public static void ShouldBe<T>(this T value, T expected)
 {
     if (!value.Equals(expected))
@@ -6,6 +8,16 @@ public static void ShouldBe<T>(this T value, T expected)
     }
 }
 
+public static void Dump<T>(this T value)
+{
+    WriteLine(JsonSerializer.Serialize(value, new JsonSerializerOptions() { WriteIndented = true }));
+}
+
+public static void Dump<T>(this T value, string whatIsThis)
+{
+    WriteLine(whatIsThis);
+    WriteLine(JsonSerializer.Serialize(value, new JsonSerializerOptions() { WriteIndented = true }));
+}
 
 public static bool IsSet(this int value, int bitPosition)
 {
