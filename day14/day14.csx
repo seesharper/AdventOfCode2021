@@ -2,69 +2,45 @@
 
 var input = File.ReadAllLines("day14/input.txt");
 var polymerTemplate = input[0];
-
-/*
-NNCB
-NCNCB   AFTER NN Mapping to C
-NCNBCB  AFTER NC Mapping to B
-NCNBCHB AFTER CB Mapping to H
-*/
-
-
-
 var insertionRules = new Dictionary<string, string>(input.Skip(2).Select(l => KeyValuePair.Create(l.Substring(0, 2), l.Substring(6, 1))));
+var chars = insertionRules.Keys.SelectMany(k => k).Distinct();
 
-var chars = insertionRules.Keys.SelectMany(k => k).Distinct(); ;
+var result = ProcessSteps(10);
+result.ShouldBe(2223);
+WriteLine($"Result after 10 steps : {result}");
 
-var map = GetInitialTemplatePairs(polymerTemplate);
-var letterMap = new Dictionary<char, long>(chars.Select(c => KeyValuePair.Create(c, 0L)));
-
-foreach (var letter in polymerTemplate)
-{
-    letterMap[letter]++;
-}
-
-
-
-for (int i = 0; i < 40; i++)
-{
-    ProcessTemplate(map);
-    WriteLine(i);
-}
-
-var orderedLetterMap = letterMap.OrderByDescending(k => k.Value);
-var result = orderedLetterMap.First().Value - orderedLetterMap.Last().Value;
-
-result.Dump();
-
-
-// foreach (var kvp in map)
-// {
-//     letterMap[kvp.Key[0]] += kvp.Value;
-//     letterMap[kvp.Key[1]] += kvp.Value;
-// }
-
-// letterMap.Dump();
-
-// var groups = polymerTemplate.GroupBy(c => c).Select(g => new { g.Key, Count = g.Count() }).OrderByDescending(g => g.Count);
-
-// //groups.Dump();
-
-// var result = groups.First().Count - groups.Last().Count;
-// result.ShouldBe(2223);
-// WriteLine($"Result after 10 steps: {result}");
-
-//result.Dump();
+result = ProcessSteps(40);
+result.ShouldBe(2566282754493);
+WriteLine($"Result after 40 steps : {result}");
 
 WriteLine("Done");
 
-
-private Dictionary<string, long> CreateEmptyMap()
+private long ProcessSteps(int numberOfSteps)
 {
-    return new Dictionary<string, long>(insertionRules.Keys.Select(k => KeyValuePair.Create(k, 0L)));
+    var letterMap = new Dictionary<char, long>(chars.Select(c => KeyValuePair.Create(c, 0L)));
+
+    foreach (var letter in polymerTemplate)
+    {
+        letterMap[letter]++;
+    }
+
+    var map = GetInitialTemplatePairs(polymerTemplate);
+
+    for (int i = 0; i < numberOfSteps; i++)
+    {
+        ProcessTemplate(map, letterMap);
+    }
+
+    var orderedLetterMap = letterMap.OrderByDescending(k => k.Value);
+    var result = orderedLetterMap.First().Value - orderedLetterMap.Last().Value;
+    return result;
 }
 
-private void ProcessTemplate(Dictionary<string, long> valuePairMap)
+
+private Dictionary<string, long> CreateEmptyMap()
+    => new(insertionRules.Keys.Select(k => KeyValuePair.Create(k, 0L)));
+
+private void ProcessTemplate(Dictionary<string, long> valuePairMap, Dictionary<char, long> letterMap)
 {
     var producedValuePairs = CreateEmptyMap();
     var removedValuePairs = CreateEmptyMap();
@@ -83,7 +59,6 @@ private void ProcessTemplate(Dictionary<string, long> valuePairMap)
         valuePairMap[valuePair.Key] += producedValuePairs[valuePair.Key];
         valuePairMap[valuePair.Key] -= removedValuePairs[valuePair.Key];
     }
-    WriteLine("");
 }
 
 private Dictionary<string, long> GetInitialTemplatePairs(string template)
