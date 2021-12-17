@@ -1,6 +1,6 @@
 #load "../tools.csx"
 
-var input = File.ReadAllLines("day14/sample.txt");
+var input = File.ReadAllLines("day14/input.txt");
 var polymerTemplate = input[0];
 
 /*
@@ -32,8 +32,10 @@ for (int i = 0; i < 40; i++)
     WriteLine(i);
 }
 
+var orderedLetterMap = letterMap.OrderByDescending(k => k.Value);
+var result = orderedLetterMap.First().Value - orderedLetterMap.Last().Value;
 
-letterMap.Dump();
+result.Dump();
 
 
 // foreach (var kvp in map)
@@ -69,14 +71,11 @@ private void ProcessTemplate(Dictionary<string, long> valuePairMap)
 
     foreach (var templatePair in valuePairMap)
     {
-        for (long i = 0; i < templatePair.Value; i++)
-        {
-            var letterToBeInserted = insertionRules[templatePair.Key];
-            producedValuePairs[templatePair.Key[0] + letterToBeInserted]++;
-            producedValuePairs[letterToBeInserted + templatePair.Key[1]]++;
-            removedValuePairs[templatePair.Key]++;
-            letterMap[letterToBeInserted[0]]++;
-        }
+        var letterToBeInserted = insertionRules[templatePair.Key];
+        producedValuePairs[templatePair.Key[0] + letterToBeInserted] += templatePair.Value;
+        producedValuePairs[letterToBeInserted + templatePair.Key[1]] += templatePair.Value;
+        removedValuePairs[templatePair.Key] += templatePair.Value;
+        letterMap[letterToBeInserted[0]] += templatePair.Value;
     }
 
     foreach (var valuePair in valuePairMap)
