@@ -1,6 +1,6 @@
 #load "../tools.csx"
 
-var input = File.ReadAllLines("day14/input.txt");
+var input = File.ReadAllLines("day14/sample.txt");
 var polymerTemplate = input[0];
 
 /*
@@ -14,52 +14,102 @@ NCNBCHB AFTER CB Mapping to H
 
 var insertionRules = new Dictionary<string, string>(input.Skip(2).Select(l => KeyValuePair.Create(l.Substring(0, 2), l.Substring(6, 1))));
 
+var chars = insertionRules.Keys.SelectMany(k => k).Distinct(); ;
+
+var map = GetInitialTemplatePairs(polymerTemplate);
+var letterMap = new Dictionary<char, long>(chars.Select(c => KeyValuePair.Create(c, 0L)));
+
+foreach (var letter in polymerTemplate)
+{
+    letterMap[letter]++;
+}
+
+
+
 for (int i = 0; i < 10; i++)
 {
-    polymerTemplate = ProcessTemplate(polymerTemplate);
+    ProcessTemplate(map);
 }
-var groups = polymerTemplate.GroupBy(c => c).Select(g => new { g.Key, Count = g.Count() }).OrderByDescending(g => g.Count);
 
-//groups.Dump();
 
-var result = groups.First().Count - groups.Last().Count;
-result.ShouldBe(2223);
-WriteLine($"Result after 10 steps: {result}");
+letterMap.Dump();
+
+
+// foreach (var kvp in map)
+// {
+//     letterMap[kvp.Key[0]] += kvp.Value;
+//     letterMap[kvp.Key[1]] += kvp.Value;
+// }
+
+// letterMap.Dump();
+
+// var groups = polymerTemplate.GroupBy(c => c).Select(g => new { g.Key, Count = g.Count() }).OrderByDescending(g => g.Count);
+
+// //groups.Dump();
+
+// var result = groups.First().Count - groups.Last().Count;
+// result.ShouldBe(2223);
+// WriteLine($"Result after 10 steps: {result}");
 
 //result.Dump();
 
-private string ProcessTemplate(string template)
-{
-    var templatePairs = GetTemplatePairs(polymerTemplate);
+WriteLine("Done");
 
-    List<string> processedPairs = new List<string>();
-    foreach (var templatePair in templatePairs)
+private void ProcessTemplate(Dictionary<string, long> valuePairMap)
+{
+
+
+
+    List<string> producedValuePairs = new List<string>();
+    List<string> removedValuePairs = new List<string>();
+
+    foreach (var templatePair in valuePairMap)
     {
-        var letterToBeInserted = insertionRules[templatePair];
-        var processedPair = templatePair[0] + letterToBeInserted + templatePair[1];
-        processedPairs.Add(processedPair);
-        //processedPair.Dump("processedPair");
+        for (long i = 0; i < templatePair.Value; i++)
+        {
+            var letterToBeInserted = insertionRules[templatePair.Key];
+            producedValuePairs.Add(templatePair.Key[0] + letterToBeInserted);
+            producedValuePairs.Add(letterToBeInserted + templatePair.Key[1]);
+            removedValuePairs.Add(templatePair.Key);
+            letterMap[letterToBeInserted[0]]++;
+        }
     }
 
-    var newTemplate = processedPairs.Aggregate((current, next) => current + next.Substring(1));
+    foreach (var producedValuePair in producedValuePairs)
+    {
+        if (!valuePairMap.ContainsKey(producedValuePair))
+        {
+            valuePairMap.Add(producedValuePair, 0);
+        }
+        valuePairMap[producedValuePair]++;
+    }
 
-    //newTemplate.Dump();
-    return newTemplate;
+    foreach (var removedValuePair in removedValuePairs)
+    {
+        valuePairMap[removedValuePair]--;
+    }
+    WriteLine("");
+    // valuePairMap.Dump();
+
 }
 
 
 
-private string[] GetTemplatePairs(string template)
+private Dictionary<string, long> GetInitialTemplatePairs(string template)
 {
+    var map = new Dictionary<string, long>();
+
     string[] pairs = new string[template.Length - 1];
 
     for (int i = 0; i < template.Length - 1; i++)
     {
         string pair = template.Substring(i, 2);
-        pairs[i] = pair;
+        map.Add(pair, 1);
+
     }
 
-    //pairs.Dump();
-    return pairs;
+    pairs.Dump();
+    return map;
 }
 
+public record TemplatePair(string Name, int Count);
