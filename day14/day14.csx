@@ -26,9 +26,10 @@ foreach (var letter in polymerTemplate)
 
 
 
-for (int i = 0; i < 10; i++)
+for (int i = 0; i < 40; i++)
 {
     ProcessTemplate(map);
+    WriteLine(i);
 }
 
 
@@ -55,61 +56,44 @@ letterMap.Dump();
 
 WriteLine("Done");
 
+
+private Dictionary<string, long> CreateEmptyMap()
+{
+    return new Dictionary<string, long>(insertionRules.Keys.Select(k => KeyValuePair.Create(k, 0L)));
+}
+
 private void ProcessTemplate(Dictionary<string, long> valuePairMap)
 {
-
-
-
-    List<string> producedValuePairs = new List<string>();
-    List<string> removedValuePairs = new List<string>();
+    var producedValuePairs = CreateEmptyMap();
+    var removedValuePairs = CreateEmptyMap();
 
     foreach (var templatePair in valuePairMap)
     {
         for (long i = 0; i < templatePair.Value; i++)
         {
             var letterToBeInserted = insertionRules[templatePair.Key];
-            producedValuePairs.Add(templatePair.Key[0] + letterToBeInserted);
-            producedValuePairs.Add(letterToBeInserted + templatePair.Key[1]);
-            removedValuePairs.Add(templatePair.Key);
+            producedValuePairs[templatePair.Key[0] + letterToBeInserted]++;
+            producedValuePairs[letterToBeInserted + templatePair.Key[1]]++;
+            removedValuePairs[templatePair.Key]++;
             letterMap[letterToBeInserted[0]]++;
         }
     }
 
-    foreach (var producedValuePair in producedValuePairs)
+    foreach (var valuePair in valuePairMap)
     {
-        if (!valuePairMap.ContainsKey(producedValuePair))
-        {
-            valuePairMap.Add(producedValuePair, 0);
-        }
-        valuePairMap[producedValuePair]++;
-    }
-
-    foreach (var removedValuePair in removedValuePairs)
-    {
-        valuePairMap[removedValuePair]--;
+        valuePairMap[valuePair.Key] += producedValuePairs[valuePair.Key];
+        valuePairMap[valuePair.Key] -= removedValuePairs[valuePair.Key];
     }
     WriteLine("");
-    // valuePairMap.Dump();
-
 }
-
-
 
 private Dictionary<string, long> GetInitialTemplatePairs(string template)
 {
-    var map = new Dictionary<string, long>();
-
-    string[] pairs = new string[template.Length - 1];
-
+    var map = CreateEmptyMap();
     for (int i = 0; i < template.Length - 1; i++)
     {
         string pair = template.Substring(i, 2);
-        map.Add(pair, 1);
-
+        map[pair] += 1;
     }
-
-    pairs.Dump();
     return map;
 }
-
-public record TemplatePair(string Name, int Count);
